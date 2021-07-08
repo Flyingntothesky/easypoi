@@ -4,6 +4,7 @@ import cn.afterturn.easypoi.excel.ExcelExportUtil;
 import cn.afterturn.easypoi.excel.ExcelImportUtil;
 import cn.afterturn.easypoi.excel.entity.ExportParams;
 import cn.afterturn.easypoi.excel.entity.ImportParams;
+import cn.afterturn.easypoi.excel.entity.TemplateExportParams;
 import cn.afterturn.easypoi.excel.entity.result.ExcelImportResult;
 import com.example.easypoi.util.ExcelStyleUtil;
 import com.example.easypoi.handler.UserVerifyHandler;
@@ -15,11 +16,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * @author wad
@@ -113,7 +112,62 @@ public class UserController {
             e.printStackTrace();
         }
         return "success";
+    }
+
+    /**
+     * 模板导出方法
+     *
+     * @return
+     */
+    @GetMapping("templateDerive")
+    public String templateDerive() throws IOException {
+        //这里是模板的路径
+        TemplateExportParams params = new TemplateExportParams(
+                "excel/模板导出.xlsx");
+        Map<String, Object> map = new HashMap<>();
+        List<ExcelUser> list = new ArrayList<>();
+        //设置日期格式
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss");
+        map.put("date", sdf.format(new Date()));
+        //赋值制表人
+        map.put("make", "天天");
+        //赋值核表人
+        map.put("check", "地地");
+        //赋值标题
+        map.put("title", "个人基本信息表格制作");
+        ExcelUser excelUser1 = new ExcelUser();
+        excelUser1.setName("小小");
+        excelUser1.setAge("18");
+        excelUser1.setSex("男");
+        excelUser1.setEducation("本科");
+        excelUser1.setPlace("中国");
+        excelUser1.setSchool("中国大学");
+        excelUser1.setRemark("这是一个备注");
+        excelUser1.setDate(sdf.format(new Date()));
+        ExcelUser excelUser2 = new ExcelUser();
+        excelUser2.setName("大大");
+        excelUser2.setAge("20");
+        excelUser2.setSex("女");
+        excelUser2.setEducation("本科");
+        excelUser2.setPlace("北京");
+        excelUser2.setSchool("北京大学");
+        excelUser2.setRemark("这是第二个备注备注");
+        excelUser2.setDate(sdf.format(new Date()));
+        list.add(excelUser1);
+        list.add(excelUser2);
+        map.put("list", list);
+        Workbook workbook = ExcelExportUtil.exportExcel(params, map);
+        //存储位置
+        File savefile = new File("D:/excel/");
+        if (!savefile.exists()) {
+            savefile.mkdirs();
+        }
+        FileOutputStream fos = new FileOutputStream("D:/excel/模板导出.xlsx");
+        workbook.write(fos);
+        fos.close();
+        return "成功";
 
     }
+
 
 }
